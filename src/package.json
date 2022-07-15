@@ -5,13 +5,15 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "npx wrangler pages dev --kv RESULTS -- next dev",
+    "start": "npx wrangler pages dev --kv RESULTS --binding -- next dev",
     "lint": "next lint"
   },
   "dependencies": {
     "@emotion/react": "^11.9.3",
     "@emotion/styled": "^11.9.3",
+    "@mui/icons-material": "^5.8.4",
     "@mui/material": "^5.9.0",
+    "graphql-request": "^4.3.0",
     "next": "12.2.2",
     "react": "18.2.0",
     "react-dom": "18.2.0",
