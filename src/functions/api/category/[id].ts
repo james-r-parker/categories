@@ -6,7 +6,7 @@ type Token = {
 type Category = {
     id: string,
     name: string,
-    meta: Meta
+    meta?: Meta
 }
 
 type Meta = { [name: string]: string };
