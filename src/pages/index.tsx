@@ -39,15 +39,17 @@ const Home: React.FC<HomePageProps> = ({ page, isLoading, defaultValue }) => {
 
   React.useEffect(() => {
     async function get() {
-      setLoading(true);
-      const result = await fetch(`/api/category/${query}`);
-      if (result.status === 200) {
-        setResult(await result.json());
+      if (query && query.length > 0) {
+        setLoading(true);
+        const result = await fetch(`/api/category/${query.trim().toLowerCase()}`);
+        if (result.status === 200) {
+          setResult(await result.json());
+        }
+        else {
+          setResult({ categories: [] });
+        }
+        setLoading(false);
       }
-      else {
-        setResult({ categories: [] });
-      }
-      setLoading(false);
     }
 
     get();
