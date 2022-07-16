@@ -61,6 +61,7 @@ const getCredentials = async (auth: string, cache: KVNamespace): Promise<Token> 
     if (token) {
         credentials = JSON.parse(token);
         if (credentials.expires < new Date().getSeconds()) {
+            await cache.delete("TOKEN");
             credentials = await getToken(auth);
             await cache.put("TOKEN", JSON.stringify(credentials));
         }
@@ -91,8 +92,13 @@ const getCategory = async (query: string, auth: string, cache: KVNamespace): Pro
             }
         });
 
-    if (response.status !== 200) {
+    if (response.status === 204) {
         return [];
+    }
+
+    if (response.status !== 200) {
+        await cache.delete("TOKEN");
+        throw new Error(`Failed to look ${response.status}`);
     }
 
     const payload: ApiResponse = await response.json();
@@ -113,17 +119,22 @@ const getCategory = async (query: string, auth: string, cache: KVNamespace): Pro
 
 export const onRequestGet: PagesFunction<{ RESULTS: KVNamespace, AUTH: string }> = async ({ params, env }) => {
 
-    const query = params.id.toString().trim().toLowerCase();
-    const category = await getCategory(query, env.AUTH, env.RESULTS);
+    try {
+        const query = params.id.toString().trim().toLowerCase();
+        const category = await getCategory(query, env.AUTH, env.RESULTS);
 
-    for (let c of category) {
-        const m = await env.RESULTS.get(`META_${c.id}`);
-        if (m) {
-            c.meta = JSON.parse(m);
+        for (let c of category) {
+            const m = await env.RESULTS.get(`META_${c.id}`);
+            if (m) {
+                c.meta = JSON.parse(m);
+            }
         }
-    }
 
-    return new Response(JSON.stringify({ categories: category }));
+        return new Response(JSON.stringify({ categories: category }));
+    }
+    catch (e) {
+        return new Response(JSON.stringify({ error: e }), { status: 500 });
+    }
 }
 
 export const onRequestPost: PagesFunction<{ RESULTS: KVNamespace }> = async ({ request, params, env }) => {
