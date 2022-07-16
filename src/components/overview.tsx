@@ -36,7 +36,6 @@ const Overview: React.FC<OverviewProps> = ({ result, query }) => {
     return (
         <Paper>
             <Box p={4}>
-                {JSON.stringify(result)}
                 <Typography variant='h3' component="h3" mb={2}>{query}</Typography>
                 <Typography variant='h6' component="p" mb={1}>Category : {category}</Typography>
                 <Typography variant='h6' component="p" mb={1}>Tariff Code : {hsCode}</Typography>
