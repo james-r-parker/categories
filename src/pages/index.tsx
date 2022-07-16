@@ -67,7 +67,7 @@ const Home: React.FC<HomePageProps> = ({ page, isLoading, defaultValue }) => {
   }, []);
 
   return (
-    <Box>
+    <Box style={{ minHeight: 900 }}>
       <Grid container direction={'column'} spacing={2}>
         <Grid item>
           <Box sx={{ backgroundColor: "#fff" }} pb={8}>
