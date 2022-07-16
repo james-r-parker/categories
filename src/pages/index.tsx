@@ -55,16 +55,17 @@ const Home: React.FC<HomePageProps> = ({ page, isLoading, defaultValue }) => {
 
   const onSave = React.useCallback((id: string, meta: { [name: string]: string }) => {
     fetch(`/api/category/${id}`, { method: "POST", body: JSON.stringify(meta) });
-    setResult({
-      categories: result.categories.reduce((p: Category[], c) => {
-        if (c.id === id) {
-          c.meta = meta;
-        }
-        p.push(c);
-        return p;
-      }, [])
-    })
-  }, []);
+
+    const updated = result.categories.reduce((p: Category[], c) => {
+      if (c.id === id) {
+        c.meta = meta;
+      }
+      p.push(c);
+      return p;
+    }, []);
+
+    setResult({ categories: updated });
+  }, [result]);
 
   return (
     <Box style={{ minHeight: 900 }}>
