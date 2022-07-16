@@ -51,7 +51,7 @@ const getToken = async (auth: string): Promise<Token> => {
 
     return {
         access_token: token.access_token,
-        expires: new Date().getSeconds() + (token.expires_in - 60)
+        expires: (Date.now() / 1000) + (token.expires_in - 60)
     }
 }
 
@@ -60,7 +60,7 @@ const getCredentials = async (auth: string, cache: KVNamespace): Promise<Token> 
     let credentials: Token;
     if (token) {
         credentials = JSON.parse(token);
-        if (credentials.expires < new Date().getSeconds()) {
+        if (credentials.expires < (Date.now() / 1000)) {
             await cache.delete("TOKEN");
             credentials = await getToken(auth);
             await cache.put("TOKEN", JSON.stringify(credentials));
