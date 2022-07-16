@@ -113,7 +113,7 @@ const getCategory = async (query: string, auth: string, cache: KVNamespace): Pro
 
 export const onRequestGet: PagesFunction<{ RESULTS: KVNamespace, AUTH: string }> = async ({ params, env }) => {
 
-    const query = (params.id as string).trim().toLowerCase();
+    const query = params.id.toString().trim().toLowerCase();
     const category = await getCategory(query, env.AUTH, env.RESULTS);
 
     for (let c of category) {

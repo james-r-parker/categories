@@ -22,20 +22,21 @@ const Overview: React.FC<OverviewProps> = ({ result, query }) => {
     }, [result]);
 
     const hsCode = React.useMemo(() => {
-        return result.categories.reverse().filter(x => x.meta?.hsCode !== undefined && x.meta?.hsCode.length > 0)[0]?.meta?.hsCode || "Unknown";
+        return [...result.categories].reverse().filter(x => x.meta?.hsCode !== undefined && x.meta?.hsCode.length > 0)[0]?.meta?.hsCode || "Unknown";
     }, [result]);
 
     const prohibited = React.useMemo(() => {
-        return (result.categories.reverse().filter(x => x.meta?.prohibited !== undefined)[0]?.meta?.prohibited || 'false') === 'true';
+        return ([...result.categories].reverse().filter(x => x.meta?.prohibited !== undefined)[0]?.meta?.prohibited || 'false') === 'true';
     }, [result]);
 
     const protectable = React.useMemo(() => {
-        return (result.categories.reverse().filter(x => x.meta?.protectable !== undefined)[0]?.meta?.protectable || 'true') === 'true';
+        return ([...result.categories].reverse().filter(x => x.meta?.protectable !== undefined)[0]?.meta?.protectable || 'true') === 'true';
     }, [result]);
 
     return (
         <Paper>
             <Box p={4}>
+                {JSON.stringify(result)}
                 <Typography variant='h3' component="h3" mb={2}>{query}</Typography>
                 <Typography variant='h6' component="p" mb={1}>Category : {category}</Typography>
                 <Typography variant='h6' component="p" mb={1}>Tariff Code : {hsCode}</Typography>
