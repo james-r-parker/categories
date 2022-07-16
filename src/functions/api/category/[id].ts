@@ -72,7 +72,7 @@ const getCredentials = async (auth: string, cache: KVNamespace): Promise<Token> 
     return credentials;
 }
 
-const getCategory = async (query: string, auth: string, cache: KVNamespace): Promise<Category[] | null> => {
+const getCategory = async (query: string, auth: string, cache: KVNamespace): Promise<Category[]> => {
     const key = `CATEGORY_${query}`;
     const cached = await cache.get(key);
 
@@ -92,7 +92,7 @@ const getCategory = async (query: string, auth: string, cache: KVNamespace): Pro
         });
 
     if (response.status !== 200) {
-        return null;
+        return [];
     }
 
     const payload: ApiResponse = await response.json();
@@ -115,10 +115,6 @@ export const onRequestGet: PagesFunction<{ RESULTS: KVNamespace, AUTH: string }>
 
     const query = params.id as string;
     const category = await getCategory(query, env.AUTH, env.RESULTS);
-
-    if (!category) {
-        return new Response("{}");
-    }
 
     for (let c of category) {
         const m = await env.RESULTS.get(`META_${c.id}`);

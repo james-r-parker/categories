@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "npx wrangler pages dev --kv RESULTS --binding -- next dev",
+    "start": "npx wrangler pages dev --kv RESULTS -- next dev",
     "lint": "next lint"
   },
   "dependencies": {
