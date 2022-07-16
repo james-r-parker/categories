@@ -48,26 +48,22 @@ const ResultItem: React.FC<ResultItemProps> = ({ id, name, meta, onChange }) => 
 }
 
 interface ResultProps {
-  query: string,
   result: ApiResponse,
   onChange: (id: string, meta: { [name: string]: string }) => void
 }
 
-const Result: React.FC<ResultProps> = ({ query, result, onChange }) => {
+const Result: React.FC<ResultProps> = ({ result, onChange }) => {
 
   return (
-    <>
-      <Typography variant='h3' component="h3" mb={3}>{query}</Typography>
-      <Grid container direction="row" spacing={6} justifyContent="center" alignItems="center">
-        {result.categories.map((c) => {
-          return (
-            <Grid item key={c.id}>
-              <ResultItem {...c} onChange={onChange} />
-            </Grid>
-          )
-        })}
-      </Grid>
-    </>
+    <Grid container direction="row" spacing={6} justifyContent="center" alignItems="center">
+      {result.categories.map((c) => {
+        return (
+          <Grid item key={c.id}>
+            <ResultItem {...c} onChange={onChange} />
+          </Grid>
+        )
+      })}
+    </Grid>
   )
 }
 

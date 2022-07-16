@@ -1,16 +1,21 @@
-import { Box, Container, Grid, Skeleton, Stack, Typography } from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary, Box, Container, Grid, Typography } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import type { GetStaticPropsResult } from 'next'
 import { request, gql } from 'graphql-request';
 import Search from '../components/search';
 import React from 'react';
 import Result from '../components/result';
+import Loader from '../components/loader';
+import Overview from '../components/overview';
 
 export type ApiResponse = {
-  categories: {
-    id: string,
-    name: string,
-    meta?: { [name: string]: string }
-  }[]
+  categories: Category[]
+}
+
+type Category = {
+  id: string,
+  name: string,
+  meta?: { [name: string]: string }
 }
 
 interface HomePageProps {
@@ -22,13 +27,15 @@ interface HomePageProps {
       slug: string
     }[]
   },
+  isLoading: boolean
+  defaultValue: ApiResponse
 }
 
-const Home: React.FC<HomePageProps> = ({ page }) => {
+const Home: React.FC<HomePageProps> = ({ page, isLoading, defaultValue }) => {
 
   const [query, setQuery] = React.useState<string>("");
-  const [result, setResult] = React.useState<ApiResponse>({ categories: [] });
-  const [loading, setLoading] = React.useState<boolean>(false);
+  const [result, setResult] = React.useState<ApiResponse>(defaultValue);
+  const [loading, setLoading] = React.useState<boolean>(isLoading);
 
   React.useEffect(() => {
     async function get() {
@@ -48,6 +55,15 @@ const Home: React.FC<HomePageProps> = ({ page }) => {
 
   const onSave = React.useCallback((id: string, meta: { [name: string]: string }) => {
     fetch(`/api/category/${id}`, { method: "POST", body: JSON.stringify(meta) });
+    setResult({
+      categories: result.categories.reduce((p: Category[], c) => {
+        if (c.id === id) {
+          c.meta = meta;
+        }
+        p.push(c);
+        return p;
+      }, [])
+    })
   }, []);
 
   return (
@@ -70,43 +86,39 @@ const Home: React.FC<HomePageProps> = ({ page }) => {
             </Container>
           </Box>
         </Grid>
-        {loading &&
+        {loading && query.length > 0 &&
           <Grid item>
             <Container maxWidth={'xl'} style={{ minHeight: 600 }}>
-              <Grid container direction="row" spacing={6} justifyContent="center" alignItems="center">
+              LOADING
+              <Loader />
+            </Container>
+          </Grid>
+        }
+        {!loading && result.categories.length > 0 &&
+          <Grid item>
+            <Container maxWidth={'xl'} style={{ minHeight: 600 }}>
+              <Grid container direction="column" spacing={3}>
                 <Grid item>
-                  <Stack spacing={1}>
-                    <Skeleton variant="text" />
-                    <Skeleton variant="circular" width={40} height={40} />
-                    <Skeleton variant="rectangular" width={210} height={118} />
-                  </Stack>
+                  <Overview query={query} result={result} />
                 </Grid>
                 <Grid item>
-                  <Stack spacing={1}>
-                    <Skeleton variant="text" />
-                    <Skeleton variant="circular" width={40} height={40} />
-                    <Skeleton variant="rectangular" width={210} height={118} />
-                  </Stack>
-                </Grid>
-                <Grid item>
-                  <Stack spacing={1}>
-                    <Skeleton variant="text" />
-                    <Skeleton variant="circular" width={40} height={40} />
-                    <Skeleton variant="rectangular" width={210} height={118} />
-                  </Stack>
+                  <Accordion>
+                    <AccordionSummary
+                      expandIcon={<ExpandMoreIcon />}
+                      aria-controls="editor-content"
+                      id="editor-header"
+                    >
+                      <Typography>Editor</Typography>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                      <Result result={result} onChange={onSave} />
+                    </AccordionDetails>
+                  </Accordion>
                 </Grid>
               </Grid>
             </Container>
           </Grid>
         }
-        {!loading &&
-          <Grid item>
-            <Container maxWidth={'xl'} style={{ minHeight: 600 }}>
-              <Result query={query} result={result} onChange={onSave} />
-            </Container>
-          </Grid>
-        }
-
       </Grid>
     </Box>
   )
@@ -133,7 +145,9 @@ export async function getStaticProps(): Promise<GetStaticPropsResult<HomePagePro
 
   return {
     props: {
-      page: pageResponse.pages[0]
+      page: pageResponse.pages[0],
+      isLoading: false,
+      defaultValue: { categories: [] }
     }, // will be passed to the page component as props
   }
 }
