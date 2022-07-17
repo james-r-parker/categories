@@ -121,6 +121,7 @@ export const onRequestGet: PagesFunction<{ RESULTS: KVNamespace, TARIFF: KVNames
 
     try {
         const query = params.id.toString().trim().toLowerCase();
+        console.log("GET", query);
         const category = await getCategory(query, env.AUTH, env.RESULTS);
 
         for (let c of category) {
@@ -133,14 +134,13 @@ export const onRequestGet: PagesFunction<{ RESULTS: KVNamespace, TARIFF: KVNames
                     let tariffCode = c.meta.hsCode;
                     let attempts = 0;
                     while (tariffCode.length > 0 && attempts < 3) {
-                        console.log("FIND", tariffCode);
                         const detail = await env.TARIFF.get(tariffCode);
                         if (detail) {
-                            c.meta.tariff = JSON.parse(detail);
+                            c.meta.tariff = detail;
                             break;
                         }
                         attempts++;
-                        tariffCode = tariffCode.substring(0, -2);
+                        tariffCode = tariffCode.slice(0, -2);
                     }
                 }
             }
