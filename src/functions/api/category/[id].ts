@@ -117,6 +117,28 @@ const getCategory = async (query: string, auth: string, cache: KVNamespace): Pro
     return result;
 }
 
+const extendCategory = async (category: Category, cache: KVNamespace, tariff: KVNamespace) => {
+    const m = await cache.get(`META_${category.id}`);
+    if (m) {
+        category.meta = JSON.parse(m);
+
+        if (category.meta && category.meta.hsCode) {
+
+            let tariffCode = category.meta.hsCode;
+            let attempts = 0;
+            while (tariffCode.length > 0 && attempts < 3) {
+                const detail = await tariff.get(tariffCode);
+                if (detail) {
+                    category.meta.tariff = detail;
+                    break;
+                }
+                attempts++;
+                tariffCode = tariffCode.slice(0, -2);
+            }
+        }
+    }
+}
+
 export const onRequestGet: PagesFunction<{ RESULTS: KVNamespace, TARIFF: KVNamespace, AUTH: string }> = async ({ params, env }) => {
 
     try {
@@ -124,27 +146,11 @@ export const onRequestGet: PagesFunction<{ RESULTS: KVNamespace, TARIFF: KVNames
         console.log("GET", query);
         const category = await getCategory(query, env.AUTH, env.RESULTS);
 
+        const tasks: Promise<void>[] = [];
         for (let c of category) {
-            const m = await env.RESULTS.get(`META_${c.id}`);
-            if (m) {
-                c.meta = JSON.parse(m);
-
-                if (c.meta && c.meta.hsCode) {
-
-                    let tariffCode = c.meta.hsCode;
-                    let attempts = 0;
-                    while (tariffCode.length > 0 && attempts < 3) {
-                        const detail = await env.TARIFF.get(tariffCode);
-                        if (detail) {
-                            c.meta.tariff = detail;
-                            break;
-                        }
-                        attempts++;
-                        tariffCode = tariffCode.slice(0, -2);
-                    }
-                }
-            }
+            tasks.push(extendCategory(c, env.RESULTS, env.TARIFF))
         }
+        Promise.all(tasks);
 
         return new Response(JSON.stringify({ categories: category }));
     }
