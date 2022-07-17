@@ -150,7 +150,7 @@ export const onRequestGet: PagesFunction<{ RESULTS: KVNamespace, TARIFF: KVNames
         for (let c of category) {
             tasks.push(extendCategory(c, env.RESULTS, env.TARIFF))
         }
-        Promise.all(tasks);
+        await Promise.all(tasks);
 
         return new Response(JSON.stringify({ categories: category }));
     }
