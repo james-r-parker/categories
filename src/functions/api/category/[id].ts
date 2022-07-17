@@ -143,11 +143,17 @@ const extendCategory = async (category: Category, cache: KVNamespace, tariff: KV
     }
 }
 
-export const onRequestGet: PagesFunction<{ RESULTS: KVNamespace, TARIFF: KVNamespace, AUTH: string }> = async ({ params, env }) => {
+const buildEtag = async (result: Category[]) => {
+    const msgUint8 = new TextEncoder().encode(JSON.stringify(result)) // encode as (utf-8) Uint8Array
+    const hashBuffer = await crypto.subtle.digest('MD5', msgUint8) // hash the message
+    const hashArray = Array.from(new Uint8Array(hashBuffer)) // convert buffer to byte array
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('') // convert bytes to hex string
+}
+
+export const onRequestGet: PagesFunction<{ RESULTS: KVNamespace, TARIFF: KVNamespace, AUTH: string }> = async ({ params, env, request }) => {
 
     try {
         const query = params.id.toString().trim().toLowerCase();
-        console.log("GET", query);
         const category = await getCategory(query, env.AUTH, env.RESULTS);
 
         const tasks: Promise<void>[] = [];
@@ -156,7 +162,23 @@ export const onRequestGet: PagesFunction<{ RESULTS: KVNamespace, TARIFF: KVNames
         }
         await Promise.all(tasks);
 
-        return new Response(JSON.stringify({ categories: category }));
+        const etag = await buildEtag(category);
+
+        if (request.headers.has("If-None-Match") &&
+            request.headers.get("If-None-Match") === `W/\"${etag}\"`) {
+            return new Response(null, {
+                status: 304
+            });
+        }
+
+        return new Response(JSON.stringify({ categories: category }), {
+            status: 200,
+            headers: {
+                "Content-Type": "application/json",
+                "Cache-Control": "public, max-age=60",
+                "ETag": `W/\"${etag}\"`
+            }
+        });
     }
     catch (e) {
         return new Response(JSON.stringify({ error: e }), { status: 500 });
