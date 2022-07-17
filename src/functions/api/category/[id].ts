@@ -125,6 +125,10 @@ const extendCategory = async (category: Category, cache: KVNamespace, tariff: KV
         if (category.meta && category.meta.hsCode) {
 
             let tariffCode = category.meta.hsCode;
+            if (tariffCode.endsWith("00")) {
+                tariffCode = tariffCode.slice(0, -2);
+            }
+
             let attempts = 0;
             while (tariffCode.length > 0 && attempts < 3) {
                 const detail = await tariff.get(tariffCode);
