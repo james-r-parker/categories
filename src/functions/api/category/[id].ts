@@ -117,7 +117,7 @@ const getCategory = async (query: string, auth: string, cache: KVNamespace): Pro
     return result;
 }
 
-export const onRequestGet: PagesFunction<{ RESULTS: KVNamespace, AUTH: string }> = async ({ params, env }) => {
+export const onRequestGet: PagesFunction<{ RESULTS: KVNamespace, TARIFF: KVNamespace, AUTH: string }> = async ({ params, env }) => {
 
     try {
         const query = params.id.toString().trim().toLowerCase();
@@ -127,6 +127,22 @@ export const onRequestGet: PagesFunction<{ RESULTS: KVNamespace, AUTH: string }>
             const m = await env.RESULTS.get(`META_${c.id}`);
             if (m) {
                 c.meta = JSON.parse(m);
+
+                if (c.meta && c.meta.hsCode) {
+
+                    let tariffCode = c.meta.hsCode;
+                    let attempts = 0;
+                    while (tariffCode.length > 0 && attempts < 3) {
+                        console.log("FIND", tariffCode);
+                        const detail = await env.TARIFF.get(tariffCode);
+                        if (detail) {
+                            c.meta.tariff = JSON.parse(detail);
+                            break;
+                        }
+                        attempts++;
+                        tariffCode = tariffCode.substring(0, -2);
+                    }
+                }
             }
         }
 

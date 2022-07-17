@@ -1,4 +1,4 @@
-import { Box, Grid, Paper, Typography } from "@mui/material"
+import { Box, Grid, Link, Paper, Typography } from "@mui/material"
 import React from "react";
 import { ApiResponse } from "../pages"
 
@@ -38,7 +38,7 @@ const Overview: React.FC<OverviewProps> = ({ result, query }) => {
             <Box p={4}>
                 <Typography variant='h3' component="h3" mb={2}>{query}</Typography>
                 <Typography variant='h6' component="p" mb={1}>Category : {category}</Typography>
-                <Typography variant='h6' component="p" mb={1}>Tariff Code : {hsCode}</Typography>
+                <Typography variant='h6' component="p" mb={1}>Tariff Code : <Link target={'_blank'} href={` https://www.trade-tariff.service.gov.uk/search?q=cheese&input-autocomplete=cheese&new_search=${hsCode}`}>{hsCode}</Link></Typography>
                 <Typography variant='h6' component="p" mb={1}>Prohibited : {prohibited ? '✅' : '❌'}</Typography>
                 <Typography variant='h6' component="p" mb={1}>Protectable : {protectable ? '✅' : '❌'}</Typography>
             </Box>
