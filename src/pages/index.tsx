@@ -12,7 +12,7 @@ export type ApiResponse = {
   categories: Category[]
 }
 
-type Category = {
+export type Category = {
   id: string,
   name: string,
   meta?: { [name: string]: string }
@@ -34,6 +34,7 @@ interface HomePageProps {
 const Home: React.FC<HomePageProps> = ({ page, isLoading, defaultValue }) => {
 
   const [query, setQuery] = React.useState<string>("");
+  const [title, setTitle] = React.useState<string>("");
   const [result, setResult] = React.useState<ApiResponse>(defaultValue);
   const [loading, setLoading] = React.useState<boolean>(isLoading);
 
@@ -48,6 +49,7 @@ const Home: React.FC<HomePageProps> = ({ page, isLoading, defaultValue }) => {
         else {
           setResult({ categories: [] });
         }
+        setTitle(query);
         setLoading(false);
       }
     }
@@ -83,7 +85,13 @@ const Home: React.FC<HomePageProps> = ({ page, isLoading, defaultValue }) => {
                   <Typography variant='subtitle1' component="h2">{page.subtitle}</Typography>
                 </Grid>
                 <Grid item>
-                  <Search onChange={(v) => setQuery(v)} />
+                  <Search
+                    onChange={(v) => setQuery(v)}
+                    onSelect={(q, c) => {
+                      setTitle(q);
+                      setResult({ categories: c })
+                    }}
+                  />
                 </Grid>
               </Grid>
             </Container>
@@ -102,7 +110,7 @@ const Home: React.FC<HomePageProps> = ({ page, isLoading, defaultValue }) => {
             <Container maxWidth={'xl'} style={{ minHeight: 600 }}>
               <Grid container direction="column" spacing={3}>
                 <Grid item>
-                  <Overview query={query} result={result} />
+                  <Overview query={title} result={result} />
                 </Grid>
                 <Grid item>
                   <Accordion>
